@@ -1,3 +1,6 @@
+Here's the full code — select all and copy directly from the block below:Here's the complete file — select all the text in the box below and copy it:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,11 +12,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <style>
-
-  /* ============================================================
-     CONFIG — edit these two lines once your Sheet & Form exist
-     ============================================================ */
-  /* (see <script> CONFIG block near the bottom of this file) */
 
   :root{
     --cream:#FAF6EC;
@@ -41,7 +39,6 @@
   a{color:inherit;}
   button{font-family:inherit;}
 
-  /* ---------- Top bar ---------- */
   .topbar{
     position:sticky; top:0; z-index:40;
     background:var(--teal);
@@ -73,7 +70,6 @@
   .add-biz-btn:hover{ transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,0,0,.18); }
   .add-biz-btn:focus-visible{ outline:3px solid var(--cream); outline-offset:2px; }
 
-  /* ---------- Hero ---------- */
   .hero{
     background:var(--teal);
     color:var(--cream);
@@ -118,7 +114,6 @@
     width:18px; height:18px; opacity:.5;
   }
 
-  /* ---------- Stats bar ---------- */
   .stats{
     display:flex; justify-content:center; gap:48px;
     margin-top:36px; flex-wrap:wrap;
@@ -130,12 +125,10 @@
     display:block; font-size:11px; text-transform:uppercase; letter-spacing:.1em; opacity:.7; margin-top:2px;
   }
 
-  /* signature divider: a row of small temple-shikhara peaks in brass */
   .skyline{
     display:block; width:100%; height:26px; margin-top:-1px;
   }
 
-  /* ---------- Filters ---------- */
   .filter-groups{
     max-width:1080px; margin:0 auto;
     padding:24px 24px 4px;
@@ -165,7 +158,6 @@
   .chip.active.area-chip{ background:var(--terracotta); border-color:var(--terracotta); }
   .chip:focus-visible{ outline:3px solid var(--brass); outline-offset:1px; }
 
-  /* ---------- Directory grid ---------- */
   .directory{
     max-width:1080px; margin:0 auto;
     padding:28px 24px 80px;
@@ -217,7 +209,6 @@
   }
   .empty h3{ color:var(--charcoal); margin-bottom:6px; font-size:19px; }
 
-  /* ---------- Store page (full takeover, not a popup) ---------- */
   .store-page{
     display:none;
     background:var(--cream);
@@ -371,32 +362,6 @@
 </div>
 
 <script>
-/* ============================================================
-   CONFIG — fill these in once you have your Sheet + Form
-   ============================================================
-   1. Create a Google Sheet with these column headers exactly:
-      Business Name | Category | Tagline | Phone | WhatsApp Number | State | District | Location | Delivery Scope | Image URL | Hours | Website/Social | Full description | Photo Gallery | Instagram | YouTube Channel | Featured Video URL
-
-      (WhatsApp Number should be digits only with country code, no + or spaces,
-       e.g. 919845012345 — it's used to build a wa.me click-to-chat link.
-       District drives the "Area" filter chips. Location is an optional finer-grained
-       locality/street name, shown on the store page but not used for filtering.
-       Delivery Scope should be exactly "Pan-India Delivery Available" or "Local Service Only".)
-
-   2. In the Sheet: File → Share → Publish to web →
-      choose the sheet tab → format "Comma-separated values (.csv)" → Publish.
-      Copy that link into SHEET_CSV_URL below.
-
-   3. Create a Google Form with matching fields, and set its
-      response destination to a SECOND tab in the same Sheet,
-      then manually (or with a small Apps Script) copy approved
-      rows into the main tab — or simply publish the form's
-      response tab directly and point SHEET_CSV_URL at that instead.
-      Paste your Form's "send" link into FORM_URL below.
-
-   Until you fill these in, the page runs on the sample
-   businesses below so you can see exactly how it will look.
-   ============================================================ */
 const CONFIG = {
   SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/1Laj9q24YGTHTFaOCaLoaOwqObQ-ZKqkVbM2zGi3M90U/export?format=csv&gid=1992971524",
   FORM_URL: "https://forms.gle/AccjVcmqb995kTCE7"
@@ -570,7 +535,6 @@ function render(){
   });
 }
 
-/* ---- Store page: a full takeover view, not a popup ---- */
 function handleHash(){
   const match = location.hash.match(/^#\/store\/(.+)$/);
   if(match){ openStore(decodeURIComponent(match[1])); }
@@ -644,3 +608,6 @@ loadData();
 </script>
 </body>
 </html>
+```
+
+That's the full file with the corrected Sheet link baked in. Paste this over the existing content in GitHub's editor, commit, and it should pick up your real listings.
