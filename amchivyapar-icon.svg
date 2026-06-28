@@ -1,0 +1,21 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Badge background -->
+  <circle cx="60" cy="60" r="57" fill="#FAF6EC" stroke="#1B4B43" stroke-width="2.5"/>
+
+  <!-- A / V interlocked monogram -->
+  <!-- Outer "A" legs + crossbar (teal) -->
+  <g fill="none" stroke="#1B4B43" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60,32 L30,90"/>
+    <path d="M60,32 L90,90"/>
+    <path d="M43.5,63 L76.5,63"/>
+  </g>
+
+  <!-- Inner "V" sharing the crossbar's endpoints (brass) -->
+  <g fill="none" stroke="#C9952C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M43.5,63 L60,90"/>
+    <path d="M76.5,63 L60,90"/>
+  </g>
+
+  <!-- Finial dot, echoing a temple kalasha pinnacle -->
+  <circle cx="60" cy="26" r="4.5" fill="#C9952C"/>
+</svg>

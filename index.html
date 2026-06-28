@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AmchiVyapar — GSB Business Directory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+
+  /* ============================================================
+     CONFIG — edit these two lines once your Sheet & Form exist
+     ============================================================ */
+  /* (see <script> CONFIG block near the bottom of this file) */
+
+  :root{
+    --cream:#FAF6EC;
+    --charcoal:#241F1A;
+    --teal:#1B4B43;
+    --teal-dim:#143a34;
+    --brass:#C9952C;
+    --terracotta:#C1592C;
+    --sand:#EFE6D2;
+    --line:#E1D6BC;
+    --radius:14px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--charcoal);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace; letter-spacing:.01em;}
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    background:var(--teal);
+    color:var(--cream);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px;
+  }
+  .brand{
+    display:flex; align-items:baseline; gap:10px;
+  }
+  .brand .mark{
+    font-family:'Fraunces',serif; font-weight:700; font-size:22px;
+    letter-spacing:.01em;
+  }
+  .brand .mark span{color:var(--brass);}
+  .brand .tag{
+    font-size:11px; text-transform:uppercase; letter-spacing:.12em;
+    opacity:.65; display:none;
+  }
+  @media(min-width:640px){ .brand .tag{display:inline;} }
+
+  .add-biz-btn{
+    background:var(--brass); color:var(--charcoal);
+    border:none; padding:10px 18px; border-radius:999px;
+    font-weight:600; font-size:13.5px; cursor:pointer;
+    text-decoration:none; white-space:nowrap;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .add-biz-btn:hover{ transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,0,0,.18); }
+  .add-biz-btn:focus-visible{ outline:3px solid var(--cream); outline-offset:2px; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:var(--teal);
+    color:var(--cream);
+    padding:54px 24px 86px;
+    text-align:center;
+  }
+  .hero h1{
+    font-size:clamp(32px,5vw,52px);
+    font-weight:600;
+    line-height:1.08;
+  }
+  .hero h1 em{
+    font-style:italic; color:var(--brass); font-weight:600;
+  }
+  .hero p{
+    margin:14px auto 0;
+    max-width:520px;
+    font-size:16px;
+    opacity:.82;
+    line-height:1.55;
+  }
+
+  .search-wrap{
+    max-width:560px; margin:34px auto 0;
+    position:relative;
+  }
+  .search-wrap input{
+    width:100%;
+    padding:16px 20px 16px 48px;
+    border-radius:999px;
+    border:none;
+    font-size:15.5px;
+    font-family:'Inter',sans-serif;
+    background:var(--cream);
+    color:var(--charcoal);
+    box-shadow:0 10px 30px rgba(0,0,0,.18);
+  }
+  .search-wrap input::placeholder{ color:#8a8275; }
+  .search-wrap input:focus-visible{ outline:3px solid var(--brass); }
+  .search-wrap svg{
+    position:absolute; left:18px; top:50%; transform:translateY(-50%);
+    width:18px; height:18px; opacity:.5;
+  }
+
+  /* ---------- Stats bar ---------- */
+  .stats{
+    display:flex; justify-content:center; gap:48px;
+    margin-top:36px; flex-wrap:wrap;
+  }
+  .stats .stat b{
+    display:block; font-family:'Fraunces',serif; font-size:26px; font-weight:600; color:var(--brass);
+  }
+  .stats .stat span{
+    display:block; font-size:11px; text-transform:uppercase; letter-spacing:.1em; opacity:.7; margin-top:2px;
+  }
+
+  /* signature divider: a row of small temple-shikhara peaks in brass */
+  .skyline{
+    display:block; width:100%; height:26px; margin-top:-1px;
+  }
+
+  /* ---------- Filters ---------- */
+  .filter-groups{
+    max-width:1080px; margin:0 auto;
+    padding:24px 24px 4px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .filter-group{
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+  }
+  .filter-group .group-label{
+    font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+    color:#9a9282; min-width:78px;
+  }
+  .filter-chips{ display:flex; flex-wrap:wrap; gap:9px; }
+  .chip{
+    border:1.5px solid var(--line);
+    background:#fff;
+    padding:7px 15px;
+    border-radius:999px;
+    font-size:13px; font-weight:600;
+    cursor:pointer; color:var(--teal-dim);
+    transition:all .15s ease;
+  }
+  .chip:hover{ border-color:var(--brass); }
+  .chip.active{
+    background:var(--teal); color:var(--cream); border-color:var(--teal);
+  }
+  .chip.active.area-chip{ background:var(--terracotta); border-color:var(--terracotta); }
+  .chip:focus-visible{ outline:3px solid var(--brass); outline-offset:1px; }
+
+  /* ---------- Directory grid ---------- */
+  .directory{
+    max-width:1080px; margin:0 auto;
+    padding:28px 24px 80px;
+  }
+  .count-row{
+    font-size:13px; color:#7a7263; margin-bottom:16px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:20px;
+  }
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    cursor:pointer;
+    display:flex; flex-direction:column;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{ transform:translateY(-3px); box-shadow:0 12px 28px rgba(36,31,26,.1); }
+  .card:focus-visible{ outline:3px solid var(--brass); outline-offset:2px; }
+  .card .img{
+    height:150px; width:100%;
+    background:var(--sand) center/cover no-repeat;
+    position:relative;
+  }
+  .card .cat-pill{
+    position:absolute; top:10px; left:10px;
+    background:rgba(36,31,26,.78); color:#fff;
+    font-size:10.5px; font-weight:600; letter-spacing:.04em;
+    padding:4px 10px; border-radius:999px;
+  }
+  .card .body{ padding:14px 16px 16px; flex:1; display:flex; flex-direction:column; gap:6px; }
+  .card h3{ font-size:17px; font-weight:600; line-height:1.25; }
+  .card .tagline{ font-size:13.5px; color:#5b5448; line-height:1.4; flex:1; }
+  .card .loc{
+    font-size:12px; color:var(--terracotta); font-weight:600;
+    display:flex; align-items:center; gap:5px; margin-top:4px;
+  }
+  .card .delivery-badge{
+    font-size:11px; color:var(--teal); font-weight:600; margin-top:2px;
+  }
+
+  .empty{
+    text-align:center; padding:60px 20px; color:#9a9282;
+  }
+  .empty h3{ color:var(--charcoal); margin-bottom:6px; font-size:19px; }
+
+  /* ---------- Store page (full takeover, not a popup) ---------- */
+  .store-page{
+    display:none;
+    background:var(--cream);
+    min-height:100vh;
+  }
+  .store-page.open{ display:block; animation:fadeIn .2s ease; }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+  .store-page .back-link{
+    display:inline-flex; align-items:center; gap:6px;
+    max-width:780px; margin:18px auto 0; padding:0 24px;
+    font-size:13.5px; font-weight:600; color:var(--teal);
+    text-decoration:none; cursor:pointer; background:none; border:none;
+    font-family:inherit;
+  }
+  .store-page .back-link:hover{ text-decoration:underline; }
+  .store-page .back-link:focus-visible{ outline:3px solid var(--brass); outline-offset:2px; }
+  .store-banner{
+    height:280px; width:100%;
+    background:var(--sand) center/cover no-repeat;
+    position:relative; margin-top:10px;
+  }
+  .store-banner::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(36,31,26,.65), rgba(36,31,26,0) 60%);
+  }
+  .store-banner .store-heading{
+    position:absolute; left:0; bottom:0; right:0;
+    max-width:780px; margin:0 auto; padding:0 24px 18px;
+    color:#fff;
+  }
+  .store-banner .cat-pill{
+    display:inline-block; background:var(--brass); color:var(--charcoal);
+    font-size:11px; font-weight:700; letter-spacing:.04em;
+    padding:4px 12px; border-radius:999px; margin-bottom:10px;
+  }
+  .store-banner h2{ font-size:clamp(24px,4vw,34px); }
+  .store-body{
+    max-width:780px; margin:0 auto; padding:28px 24px 70px;
+  }
+  .store-body .tagline{ font-size:16px; color:#5b5448; line-height:1.55; margin-bottom:22px; }
+  .store-detail-row{
+    display:flex; align-items:flex-start; gap:14px;
+    padding:14px 0; border-top:1px solid var(--line);
+    font-size:14.5px;
+  }
+  .store-detail-row .label{ color:#9a9282; min-width:96px; font-size:12px; text-transform:uppercase; letter-spacing:.06em; padding-top:2px; flex-shrink:0; }
+  .store-detail-row a{ color:var(--teal); font-weight:600; text-decoration:none; }
+  .store-detail-row a:hover{ text-decoration:underline; }
+  .store-description{
+    margin-top:24px; padding-top:20px; border-top:1px solid var(--line);
+    font-size:14.5px; line-height:1.7; color:#4a443a;
+  }
+  .store-section-title{
+    font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#9a9282;
+    margin:26px 0 12px; padding-top:20px; border-top:1px solid var(--line);
+    font-weight:700;
+  }
+  .gallery-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px;
+  }
+  .gallery-grid a{
+    display:block; height:110px; border-radius:10px; overflow:hidden;
+    background:var(--sand) center/cover no-repeat;
+  }
+  .video-embed{
+    position:relative; width:100%; padding-top:56.25%; border-radius:12px; overflow:hidden; background:var(--sand);
+  }
+  .video-embed iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .video-link-btn, .social-link-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--teal); color:var(--cream); text-decoration:none;
+    font-size:13.5px; font-weight:600; padding:9px 16px; border-radius:999px;
+    margin-right:8px; margin-bottom:8px;
+  }
+  .social-link-btn.insta{ background:linear-gradient(45deg,#C1592C,#C9952C); }
+  .social-link-btn.yt{ background:#C1392B; }
+  .social-link-btn.wa{ background:#25D366; color:#1B3A1B; }
+
+  footer{
+    text-align:center; padding:30px 20px 40px;
+    font-size:12.5px; color:#9a9282;
+  }
+
+  @media(max-width:480px){
+    .topbar{padding:12px 16px;}
+    .hero{padding:40px 16px 70px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="directoryView">
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">Amchi<span>Vyapar</span></span>
+    <span class="tag">GSB Business Directory</span>
+  </div>
+  <a class="add-biz-btn" id="addBizBtn" href="#" target="_blank" rel="noopener">+ Add Your Business</a>
+</div>
+
+<div class="hero">
+  <h1>Find a business<br><em>from our own community.</em></h1>
+  <p>AmchiVyapar connects GSB entrepreneurs with the people looking for them — caterers, shops and services, all in one place.</p>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="searchInput" type="text" placeholder="Search by name, service, or area…" autocomplete="off">
+  </div>
+  <div class="stats" id="statsBar"></div>
+</div>
+<svg class="skyline" viewBox="0 0 100 6" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0,6 L0,4 L4,1 L8,4 L8,6 L12,6 L12,3 L16,0 L20,3 L20,6 L24,6 L24,4 L28,1 L32,4 L32,6 L36,6 L36,3 L40,0 L44,3 L44,6 L48,6 L48,4 L52,1 L56,4 L56,6 L60,6 L60,3 L64,0 L68,3 L68,6 L72,6 L72,4 L76,1 L80,4 L80,6 L84,6 L84,3 L88,0 L92,3 L92,6 L96,6 L96,4 L100,1 L100,6 Z" fill="#C9952C"/>
+</svg>
+
+<div class="filter-groups">
+  <div class="filter-group">
+    <span class="group-label">Category</span>
+    <div class="filter-chips" id="catFilters"></div>
+  </div>
+  <div class="filter-group">
+    <span class="group-label">Area</span>
+    <div class="filter-chips" id="areaFilters"></div>
+  </div>
+  <div class="filter-group">
+    <span class="group-label">Delivery</span>
+    <div class="filter-chips" id="deliveryFilters"></div>
+  </div>
+</div>
+
+<div class="directory">
+  <div class="count-row" id="countRow"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState" style="display:none;">
+    <h3>No businesses match yet</h3>
+    <p>Try a different search term, category, or area.</p>
+  </div>
+</div>
+
+<footer>Built with care for the GSB community · <a href="mailto:amchivyapar@gmail.com" style="color:var(--teal); font-weight:600; text-decoration:none;">amchivyapar@gmail.com</a> · <a href="https://www.instagram.com/amchivyapar/" target="_blank" rel="noopener" style="color:var(--teal); font-weight:600; text-decoration:none;">Instagram</a></footer>
+</div>
+
+<div class="store-page" id="storePage">
+  <button class="back-link" id="backLink">← Back to directory</button>
+  <button class="back-link" id="shareLink" style="float:right; margin-right:24px;">🔗 Copy link to share</button>
+  <div class="store-banner" id="storeBanner">
+    <div class="store-heading">
+      <span class="cat-pill" id="storeCat"></span>
+      <h2 id="storeName"></h2>
+    </div>
+  </div>
+  <div class="store-body" id="storeBody"></div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — fill these in once you have your Sheet + Form
+   ============================================================
+   1. Create a Google Sheet with these column headers exactly:
+      Business Name | Category | Tagline | Phone | WhatsApp Number | State | District | Location | Delivery Scope | Image URL | Hours | Website/Social | Full description | Photo Gallery | Instagram | YouTube Channel | Featured Video URL
+
+      (WhatsApp Number should be digits only with country code, no + or spaces,
+       e.g. 919845012345 — it's used to build a wa.me click-to-chat link.
+       District drives the "Area" filter chips. Location is an optional finer-grained
+       locality/street name, shown on the store page but not used for filtering.
+       Delivery Scope should be exactly "Pan-India Delivery Available" or "Local Service Only".)
+
+   2. In the Sheet: File → Share → Publish to web →
+      choose the sheet tab → format "Comma-separated values (.csv)" → Publish.
+      Copy that link into SHEET_CSV_URL below.
+
+   3. Create a Google Form with matching fields, and set its
+      response destination to a SECOND tab in the same Sheet,
+      then manually (or with a small Apps Script) copy approved
+      rows into the main tab — or simply publish the form's
+      response tab directly and point SHEET_CSV_URL at that instead.
+      Paste your Form's "send" link into FORM_URL below.
+
+   Until you fill these in, the page runs on the sample
+   businesses below so you can see exactly how it will look.
+   ============================================================ */
+const CONFIG = {
+  SHEET_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ5i4mKrdNMIxf_ohu75Tyue0tqgdjIrZSS7E_uNmMz0FyLXgIJPWw3IHyBAuQdVrjBgi7MpcfYdP3m/pub?gid=1992971524&single=true&output=csv",
+  FORM_URL: "https://forms.gle/AccjVcmqb995kTCE7"
+};
+
+const SAMPLE_DATA = [
+  { name:"Coastal Wellness Studio", category:"Healthcare", tagline:"Yoga, Ayurvedic massage and nutrition guidance rooted in coastal traditions.", phone:"+91 96655 44332", whatsapp:"919665544332", state:"Karnataka", district:"Dakshina Kannada", delivery:"Local Service Only", image:"https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=900&q=70", hours:"6:00 AM – 8:00 PM", social:"@coastalwellness", description:"A wellness studio in Mangaluru offering yoga, Ayurvedic massage and nutrition guidance rooted in coastal traditions.", gallery:["https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&q=70","https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=70"], instagram:"https://instagram.com/coastalwellness", youtube:"", video:"" }
+];
+
+let allBusinesses = [];
+let activeCategory = "All";
+let activeArea = "All";
+let activeDelivery = "All";
+
+function normalize(row){
+  return {
+    name: row["Business Name"] || row.name || "Unnamed Business",
+    category: row["Category"] || row.category || "Other",
+    tagline: row["Tagline"] || row["Short Tagline"] || row.tagline || "",
+    phone: row["Phone"] || row["Contact Number"] || row.phone || "",
+    whatsapp: row["WhatsApp Number"] || row["WhatsApp"] || "",
+    state: row["State"] || "",
+    district: row["District"] || row["Location"] || row["Location / Area"] || row.location || "",
+    locality: row["Location"] && row["District"] ? row["Location"] : "",
+    delivery: row["Delivery Scope"] || "",
+    image: row["Image URL"] || row["Cover image URL"] || row.image || "",
+    hours: row["Hours"] || row["Operating hours"] || row.hours || "",
+    social: row["Website/Social"] || row["Social"] || row.social || "",
+    description: row["Full description"] || row.description || "",
+    gallery: (row["Photo Gallery"] || "").split(",").map(s => s.trim()).filter(Boolean),
+    instagram: row["Instagram"] || "",
+    youtube: row["YouTube Channel"] || "",
+    video: row["Featured Video URL"] || ""
+  };
+}
+
+function getYouTubeId(url){
+  if(!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([A-Za-z0-9_-]{6,})/);
+  return m ? m[1] : null;
+}
+
+function slugify(name){
+  return (name || "").toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+function loadData(){
+  if(!CONFIG.SHEET_CSV_URL){
+    allBusinesses = SAMPLE_DATA.filter(b => b.category !== "Chartered Accountants");
+    init();
+    return;
+  }
+  Papa.parse(CONFIG.SHEET_CSV_URL, {
+    download:true, header:true, skipEmptyLines:true,
+    complete: (res) => {
+      allBusinesses = res.data.map(normalize)
+        .filter(b => b.name && b.name !== "Unnamed Business")
+        .filter(b => b.category !== "Chartered Accountants");
+      if(allBusinesses.length === 0) allBusinesses = SAMPLE_DATA;
+      init();
+    },
+    error: () => { allBusinesses = SAMPLE_DATA; init(); }
+  });
+}
+
+function init(){
+  renderStats();
+  renderFilters();
+  render();
+  if(CONFIG.FORM_URL){
+    document.getElementById("addBizBtn").href = CONFIG.FORM_URL;
+  } else {
+    document.getElementById("addBizBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("Add your Google Form link in the CONFIG section of this file to activate this button.");
+    });
+  }
+  window.addEventListener("hashchange", handleHash);
+  handleHash();
+}
+
+function renderStats(){
+  const cats = new Set(allBusinesses.map(b => b.category));
+  const districts = new Set(allBusinesses.map(b => b.district));
+  document.getElementById("statsBar").innerHTML = `
+    <div class="stat"><b>${allBusinesses.length}+</b><span>Verified Businesses</span></div>
+    <div class="stat"><b>${cats.size}</b><span>Categories</span></div>
+    <div class="stat"><b>${districts.size}</b><span>Districts</span></div>`;
+}
+
+function renderFilters(){
+  const cats = ["All", ...new Set(allBusinesses.map(b => b.category))];
+  const districts = ["All", ...new Set(allBusinesses.map(b => b.district))];
+  const deliveryOptions = ["All", "Pan-India Delivery Available", "Local Service Only"];
+
+  const catWrap = document.getElementById("catFilters");
+  catWrap.innerHTML = "";
+  cats.forEach(cat => {
+    const chip = document.createElement("button");
+    chip.className = "chip" + (cat === activeCategory ? " active" : "");
+    chip.textContent = cat;
+    chip.addEventListener("click", () => { activeCategory = cat; renderFilters(); render(); });
+    catWrap.appendChild(chip);
+  });
+
+  const areaWrap = document.getElementById("areaFilters");
+  areaWrap.innerHTML = "";
+  districts.forEach(d => {
+    const chip = document.createElement("button");
+    chip.className = "chip area-chip" + (d === activeArea ? " active" : "");
+    chip.textContent = d;
+    chip.addEventListener("click", () => { activeArea = d; renderFilters(); render(); });
+    areaWrap.appendChild(chip);
+  });
+
+  const deliveryWrap = document.getElementById("deliveryFilters");
+  if(deliveryWrap){
+    deliveryWrap.innerHTML = "";
+    deliveryOptions.forEach(opt => {
+      const chip = document.createElement("button");
+      chip.className = "chip" + (opt === activeDelivery ? " active" : "");
+      chip.textContent = opt === "All" ? "All" : (opt === "Pan-India Delivery Available" ? "Pan-India Delivery" : "Local Only");
+      chip.addEventListener("click", () => { activeDelivery = opt; renderFilters(); render(); });
+      deliveryWrap.appendChild(chip);
+    });
+  }
+}
+
+function getFiltered(){
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  return allBusinesses.filter(b => {
+    const matchesCat = activeCategory === "All" || b.category === activeCategory;
+    const matchesArea = activeArea === "All" || b.district === activeArea;
+    const matchesDelivery = activeDelivery === "All" || b.delivery === activeDelivery;
+    const matchesQ = !q || [b.name, b.tagline, b.district, b.state, b.category].join(" ").toLowerCase().includes(q);
+    return matchesCat && matchesArea && matchesDelivery && matchesQ;
+  });
+}
+
+function render(){
+  const list = getFiltered();
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("emptyState");
+  document.getElementById("countRow").textContent = `${list.length} business${list.length === 1 ? "" : "es"} listed`;
+
+  grid.innerHTML = "";
+  empty.style.display = list.length ? "none" : "block";
+
+  list.forEach((b) => {
+    const idx = allBusinesses.indexOf(b);
+    const card = document.createElement("div");
+    card.className = "card";
+    card.tabIndex = 0;
+    const areaLine = [b.district, b.state].filter(Boolean).join(", ");
+    card.innerHTML = `
+      <div class="img" style="background-image:url('${b.image}')">
+        <span class="cat-pill">${b.category}</span>
+      </div>
+      <div class="body">
+        <h3>${b.name}</h3>
+        <div class="tagline">${b.tagline}</div>
+        <div class="loc">📍 ${areaLine}</div>
+        ${b.delivery === "Pan-India Delivery Available" ? `<div class="delivery-badge">📦 Ships Pan-India</div>` : ""}
+      </div>`;
+    card.addEventListener("click", () => { location.hash = "#/store/" + slugify(b.name); });
+    card.addEventListener("keydown", (e) => { if(e.key === "Enter") location.hash = "#/store/" + slugify(b.name); });
+    grid.appendChild(card);
+  });
+}
+
+/* ---- Store page: a full takeover view, not a popup ---- */
+function handleHash(){
+  const match = location.hash.match(/^#\/store\/(.+)$/);
+  if(match){ openStore(decodeURIComponent(match[1])); }
+  else { closeStore(); }
+}
+
+function openStore(slug){
+  const b = allBusinesses.find(biz => slugify(biz.name) === slug);
+  if(!b) return;
+  document.getElementById("directoryView").style.display = "none";
+  const store = document.getElementById("storePage");
+  store.classList.add("open");
+  window.scrollTo(0,0);
+
+  document.getElementById("storeBanner").style.backgroundImage = `url('${b.image}')`;
+  document.getElementById("storeCat").textContent = b.category;
+  document.getElementById("storeName").textContent = b.name;
+
+  document.getElementById("storeBody").innerHTML = `
+    <div class="tagline">${b.tagline}</div>
+    ${b.phone ? `<div class="store-detail-row"><span class="label">Phone</span><a href="tel:${b.phone.replace(/\s/g,'')}">${b.phone}</a></div>` : ""}
+    ${b.whatsapp ? `<div class="store-detail-row"><span class="label">WhatsApp</span><a class="social-link-btn wa" href="https://wa.me/${b.whatsapp.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener">💬 Chat on WhatsApp</a></div>` : ""}
+    ${(b.district || b.state) ? `<div class="store-detail-row"><span class="label">Area</span><span>${[b.locality, b.district, b.state].filter(Boolean).join(", ")}</span></div>` : ""}
+    ${b.delivery ? `<div class="store-detail-row"><span class="label">Delivery</span><span>${b.delivery === "Pan-India Delivery Available" ? "📦 Ships Pan-India" : "📍 Local service only"}</span></div>` : ""}
+    ${b.hours ? `<div class="store-detail-row"><span class="label">Hours</span><span>${b.hours}</span></div>` : ""}
+    ${b.social ? `<div class="store-detail-row"><span class="label">Website</span><span>${b.social}</span></div>` : ""}
+    ${b.description ? `<div class="store-description">${b.description}</div>` : ""}
+    ${(b.instagram || b.youtube) ? `
+      <div class="store-section-title">Follow</div>
+      ${b.instagram ? `<a class="social-link-btn insta" href="${b.instagram}" target="_blank" rel="noopener">Instagram →</a>` : ""}
+      ${b.youtube ? `<a class="social-link-btn yt" href="${b.youtube}" target="_blank" rel="noopener">YouTube →</a>` : ""}
+    ` : ""}
+    ${b.video ? `
+      <div class="store-section-title">Featured Video</div>
+      ${getYouTubeId(b.video) ? `
+        <div class="video-embed"><iframe src="https://www.youtube.com/embed/${getYouTubeId(b.video)}" allowfullscreen></iframe></div>
+      ` : `<a class="video-link-btn" href="${b.video}" target="_blank" rel="noopener">▶ Watch video</a>`}
+    ` : ""}
+    ${b.gallery && b.gallery.length ? `
+      <div class="store-section-title">Photos</div>
+      <div class="gallery-grid">
+        ${b.gallery.map(url => `<a href="${url}" target="_blank" rel="noopener" style="background-image:url('${url}')"></a>`).join("")}
+      </div>
+    ` : ""}
+  `;
+}
+
+function closeStore(){
+  document.getElementById("storePage").classList.remove("open");
+  document.getElementById("directoryView").style.display = "";
+}
+
+document.getElementById("backLink").addEventListener("click", () => { history.back(); });
+document.getElementById("shareLink").addEventListener("click", () => {
+  const url = location.href;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById("shareLink");
+      const original = btn.textContent;
+      btn.textContent = "✓ Link copied!";
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    });
+  } else {
+    prompt("Copy this link:", url);
+  }
+});
+
+document.getElementById("searchInput").addEventListener("input", render);
+
+loadData();
+</script>
+</body>
+</html>
